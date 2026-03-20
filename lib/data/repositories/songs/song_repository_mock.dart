@@ -4,8 +4,6 @@ import '../../../model/songs/song.dart';
 import 'song_repository.dart';
 
 class SongRepositoryMock implements SongRepository {
-   int _tryCount = 0;
-
   final List<Song> _songs = [
     Song(
       id: 's1',
@@ -41,30 +39,18 @@ class SongRepositoryMock implements SongRepository {
 
   @override
   Future<List<Song>> fetchSongs() async {
-    await Future.delayed(const Duration(seconds: 3));
-
-    _tryCount++;
-
-    // throw error every 2 tries
-    if (_tryCount % 2 == 0) {
-      throw Exception("Failed to fetch songs from server");
-    }
-
-    return _songs;
+    return Future.delayed(Duration(seconds: 4), () {
+      throw Exception("G3 and G4 the class is finished");
+    });
   }
-
 
   @override
   Future<Song?> fetchSongById(String id) async {
-    // - Simulate a delay of 3 seconds.
-    await Future.delayed(const Duration(seconds: 3));
-
-    // - After the delay : Find the song of given id in the list of songs and return it
-    try {
-      return _songs.firstWhere((song) => song.id == id);
-    } catch (e) {
-      // - If not found : Throw an error with the message “no song found for id 25 in the database"
-      throw Exception("No song found for ID: $id in the database");
-    }
+    return Future.delayed(Duration(seconds: 4), () {
+      return _songs.firstWhere(
+        (song) => song.id == id,
+        orElse: () => throw Exception("No song with id $id in the database"),
+      );
+    });
   }
 }

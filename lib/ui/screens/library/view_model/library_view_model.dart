@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../../data/repositories/songs/song_repository.dart';
 import '../../../states/player_state.dart';
 import '../../../../model/songs/song.dart';
-
-enum LibraryStatus { loading, success, error }
+import '../../../utils/async_value.dart';
 
 class LibraryViewModel extends ChangeNotifier {
   final SongRepository songRepository;
   final PlayerState playerState;
 
-  List<Song>? _songs;
-  LibraryStatus _status = LibraryStatus.loading;
-  String? _errorMessage;
+  AsyncValue<List<Song>> songsValue = AsyncValue.loading();
 
   LibraryViewModel({required this.songRepository, required this.playerState}) {
     playerState.addListener(notifyListeners);
@@ -20,10 +17,6 @@ class LibraryViewModel extends ChangeNotifier {
     _init();
   }
 
-  List<Song> get songs => _songs == null ? [] : _songs!;
-  LibraryStatus get status => _status;
-  String? get errorMessage => _errorMessage;
-
   @override
   void dispose() {
     playerState.removeListener(notifyListeners);
@@ -31,18 +24,24 @@ class LibraryViewModel extends ChangeNotifier {
   }
 
   void _init() async {
-    _status = LibraryStatus.loading;
+    fetchSong();
+  }
+
+  void fetchSong() async {
+    // 1- Loading state
+    songsValue = AsyncValue.loading();
     notifyListeners();
 
     try {
-      _songs = await songRepository.fetchSongs();
-      _status = LibraryStatus.success;
+      // 2- Fetch is successfull
+      List<Song> songs = await songRepository.fetchSongs();
+      songsValue = AsyncValue.success(songs);
     } catch (e) {
-      _status = LibraryStatus.error;
-      _errorMessage = e.toString();
+      // 3- Fetch is unsucessfull
+      songsValue = AsyncValue.error(e);
     }
+     notifyListeners();
 
-    notifyListeners();
   }
 
   bool isSongPlaying(Song song) => playerState.currentSong == song;

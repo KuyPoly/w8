@@ -10,4 +10,9 @@ class Song {
     required this.artist,
     required this.duration,
   });
+
+  @override
+  String toString() {
+    return 'Song(id: $id, title: $title, artist: $artist, duration: $duration)';
+  }
 }
