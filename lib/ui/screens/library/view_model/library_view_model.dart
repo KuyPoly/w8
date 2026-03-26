@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:w8/data/repositories/artists/artist_repository.dart';
+import 'package:w8/model/artists/artist.dart';
+import 'package:w8/model/songs/song_artist.dart';
 import '../../../../data/repositories/songs/song_repository.dart';
 import '../../../states/player_state.dart';
 import '../../../../model/songs/song.dart';
@@ -6,11 +9,16 @@ import '../../../utils/async_value.dart';
 
 class LibraryViewModel extends ChangeNotifier {
   final SongRepository songRepository;
+  final ArtistRepository artistRepository;
   final PlayerState playerState;
 
-  AsyncValue<List<Song>> songsValue = AsyncValue.loading();
+  AsyncValue<List<SongArtist>> songsValue = AsyncValue.loading();
 
-  LibraryViewModel({required this.songRepository, required this.playerState}) {
+  LibraryViewModel({
+    required this.songRepository,
+    required this.playerState,
+    required this.artistRepository,
+  }) {
     playerState.addListener(notifyListeners);
 
     // init
@@ -33,15 +41,30 @@ class LibraryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 2- Fetch is successfull
-      List<Song> songs = await songRepository.fetchSongs();
-      songsValue = AsyncValue.success(songs);
+      //fetch both
+      final results = await Future.wait([
+        songRepository.fetchSongs(),
+        artistRepository.fetchArtists(),
+      ]);
+      
+      final songs = results[0] as List<Song>;
+      final artists = results[1] as List<Artist>;
+
+      //build map to lookup artist with artistID
+      final artistMap = {for (var a in artists) a.id: a};
+
+      // pair song with artist
+      final joined = songs
+          .where((s) => artistMap.containsKey(s.artistId))
+          .map((s) => SongArtist(song: s, artist: artistMap[s.artistId]!))
+          .toList();
+
+      songsValue = AsyncValue.success(joined);
     } catch (e) {
       // 3- Fetch is unsucessfull
       songsValue = AsyncValue.error(e);
     }
-     notifyListeners();
-
+    notifyListeners();
   }
 
   bool isSongPlaying(Song song) => playerState.currentSong == song;
