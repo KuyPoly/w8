@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:w8/model/artists/artist.dart';
-
+import '../../../model/artist/artist.dart';
 
 class ArtistTile extends StatelessWidget {
   const ArtistTile({
     super.key,
     required this.artist,
+    
   });
 
   final Artist artist;
@@ -21,7 +21,7 @@ class ArtistTile extends StatelessWidget {
         ),
         child: ListTile(
           title: Text(artist.name),
-          subtitle: Text(artist.genre),
+          subtitle: Text("Genre: ${artist.genre}"),
           leading: CircleAvatar(
             backgroundImage: NetworkImage(artist.imageUrl.toString()),
           ),

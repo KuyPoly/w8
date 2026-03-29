@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:w8/data/repositories/artists/artist_repository.dart';
-import 'package:w8/model/artists/artist.dart';
-import 'package:w8/model/songs/song_artist.dart';
+import '../../../../data/repositories/artist/artist_repository.dart';
 import '../../../../data/repositories/songs/song_repository.dart';
+import '../../../../model/artist/artist.dart';
 import '../../../states/player_state.dart';
 import '../../../../model/songs/song.dart';
 import '../../../utils/async_value.dart';
+import 'library_item_data.dart';
 
 class LibraryViewModel extends ChangeNotifier {
   final SongRepository songRepository;
   final ArtistRepository artistRepository;
+
   final PlayerState playerState;
 
-  AsyncValue<List<SongArtist>> songsValue = AsyncValue.loading();
+  AsyncValue<List<LibraryItemData>> data = AsyncValue.loading();
 
   LibraryViewModel({
     required this.songRepository,
@@ -37,32 +38,34 @@ class LibraryViewModel extends ChangeNotifier {
 
   void fetchSong() async {
     // 1- Loading state
-    songsValue = AsyncValue.loading();
+    data = AsyncValue.loading();
     notifyListeners();
 
     try {
-      //fetch both
-      final results = await Future.wait([
-        songRepository.fetchSongs(),
-        artistRepository.fetchArtists(),
-      ]);
-      
-      final songs = results[0] as List<Song>;
-      final artists = results[1] as List<Artist>;
+      // 1- Fetch songs
+      List<Song> songs = await songRepository.fetchSongs();
 
-      //build map to lookup artist with artistID
-      final artistMap = {for (var a in artists) a.id: a};
+      // 2- Fethc artist
+      List<Artist> artists = await artistRepository.fetchArtists();
 
-      // pair song with artist
-      final joined = songs
-          .where((s) => artistMap.containsKey(s.artistId))
-          .map((s) => SongArtist(song: s, artist: artistMap[s.artistId]!))
+      // 3- Create the mapping artistid-> artist
+      Map<String, Artist> mapArtist = {};
+      for (Artist artist in artists) {
+        mapArtist[artist.id] = artist;
+      }
+
+      List<LibraryItemData> data = songs
+          .map(
+            (song) =>
+                LibraryItemData(song: song, artist: mapArtist[song.artistId]!),
+          )
           .toList();
 
-      songsValue = AsyncValue.success(joined);
+      this.data = AsyncValue.success(data);
+
     } catch (e) {
       // 3- Fetch is unsucessfull
-      songsValue = AsyncValue.error(e);
+      data = AsyncValue.error(e);
     }
     notifyListeners();
   }

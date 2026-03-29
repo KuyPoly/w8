@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:w8/model/artists/artist.dart';
-import 'package:w8/ui/screens/artist/view_model/artist_view_model.dart';
-import 'package:w8/ui/theme/theme.dart';
-import 'package:w8/ui/widgets/artist/artist_tile.dart';
+ 
+import '../../../../model/artist/artist.dart';
+import '../../../theme/theme.dart';
 import '../../../utils/async_value.dart';
+import '../../../widgets/song/artist_tile.dart';
+import '../view_model/artists_view_model.dart';
 
-class ArtistContent extends StatelessWidget {
-  const ArtistContent({super.key});
+class ArtistsContent extends StatelessWidget {
+  const ArtistsContent({super.key});
 
   @override
   Widget build(BuildContext context) {
     // 1- Read the globbal song repository
-    ArtistViewModel mv = context.watch<ArtistViewModel>();
+    ArtistsViewModel mv = context.watch<ArtistsViewModel>();
 
-    AsyncValue<List<Artist>> asyncValue = mv.artistValue;
+    AsyncValue<List<Artist>> asyncValue = mv.artistsValue;
 
     Widget content;
     switch (asyncValue.state) {
@@ -33,9 +34,7 @@ class ArtistContent extends StatelessWidget {
         List<Artist> artists = asyncValue.data!;
         content = ListView.builder(
           itemCount: artists.length,
-          itemBuilder: (context, index) => ArtistTile(
-            artist: artists[index],
-          ),
+          itemBuilder: (context, index) => ArtistTile(artist: artists[index]),
         );
     }
 
@@ -45,7 +44,7 @@ class ArtistContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(height: 16),
-          Text("Artists", style: AppTextStyles.heading),
+          Text("Library", style: AppTextStyles.heading),
           SizedBox(height: 50),
 
           Expanded(child: content),

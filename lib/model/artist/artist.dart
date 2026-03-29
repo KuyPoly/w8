@@ -13,6 +13,6 @@ class Artist {
 
   @override
   String toString() {
-    return 'Artist(name: $name, genre: $genre';
+    return 'Song(id: $id, name: $name, genre: $genre, genre: $genre)';
   }
 }

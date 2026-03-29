@@ -1,4 +1,5 @@
-import 'package:w8/model/artists/artist.dart';
+ 
+import '../../model/artist/artist.dart';
 
 class ArtistDto {
   static const String nameKey = 'name';
@@ -18,7 +19,7 @@ class ArtistDto {
     );
   }
 
-  /// Convert artist to JSON
+  /// Convert Artist to JSON
   Map<String, dynamic> toJson(Artist artist) {
     return {
       nameKey: artist.name,
