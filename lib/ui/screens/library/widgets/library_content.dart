@@ -18,7 +18,6 @@ class LibraryContent extends StatelessWidget {
 
     Widget content;
     switch (asyncValue.state) {
-      
       case AsyncValueState.loading:
         content = Center(child: CircularProgressIndicator());
         break;
@@ -40,7 +39,7 @@ class LibraryContent extends StatelessWidget {
             onTap: () {
               mv.start(data[index].song);
             },
-             onLike: () {
+            onLike: () {
               mv.likeSong(data[index]);
             },
           ),
@@ -53,7 +52,17 @@ class LibraryContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(height: 16),
-          Text("Library", style: AppTextStyles.heading),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(width: 40),
+              Text("Library", style: AppTextStyles.heading),
+              IconButton(
+                icon: Icon(Icons.refresh),
+                onPressed: () => mv.fetchSong(forceFetch: true),
+              ),
+            ],
+          ),
           SizedBox(height: 50),
 
           Expanded(child: content),
